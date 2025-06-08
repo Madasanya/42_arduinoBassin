@@ -6,29 +6,32 @@ const int PIN_LED_GREEN = 13;
 const int PIN_LED_RED = 12;
 const int PIN_LED_YELLOW = 11;
 const int PIN_BUTTON = 3;
-const int MODES = 1;
+const int MODES = 3;
+const unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 //variables
-int ledStateGreen = HIGH;
 int ledStateRed = LOW;
 int ledStateYellow = LOW;
 int mode = 0;
-int buttonState;
 unsigned long currentMillis = 0;
 unsigned long previousMillisRed = 0;
 unsigned long previousMillisYellow = 0;
-int lastButtonState = LOW;
-unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
-int ledBlinkStateGreen = 0;
 int ledBlinkStateRed = 0;
 int ledBlinkStateYellow = 0;
+int buttonState;
+int lastButtonState = LOW;
+unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+
 
 void blink (const int pin, unsigned long delay, unsigned long duration, unsigned long pause, int *ledState, unsigned long * previousMillis)
 {
+  // delay = delay*1000;
+  // duration = duration *1000;
+  // pause = pause *1000;
+  currentMillis = millis();
   switch (*ledState)
   {
-    case 0:
+    case 0: // TODO: Use macros (enums)
     	*previousMillis = currentMillis;
     	digitalWrite(pin, LOW);
     	*ledState = 1; 
@@ -51,24 +54,13 @@ void blink (const int pin, unsigned long delay, unsigned long duration, unsigned
     	break;
     default:
     	if (currentMillis - *previousMillis > pause) 
-        {
-          digitalWrite(PIN_LED_RED, LOW);
-          *ledState = 0;
-          *previousMillis = currentMillis;
-        } 	
+      {
+        digitalWrite(pin, LOW);
+        *ledState = 1;
+        *previousMillis = currentMillis;
+      }
   }
 }
-
-// if the LED is off turn it on and vice-versa:
-int reverseLEDState(int *ledState)
-{
-  if (*ledState == LOW) {
-    *ledState = HIGH;
-  } else {
-    *ledState = LOW;
-  }
-  return *ledState;
-}  
 
 void setup()
 {
@@ -77,7 +69,7 @@ void setup()
   pinMode(PIN_LED_YELLOW, OUTPUT);
   pinMode(PIN_BUTTON, INPUT_PULLUP);
   mode = 0;
-  digitalWrite(PIN_LED_GREEN, ledStateGreen);
+  digitalWrite(PIN_LED_GREEN, HIGH);
   delay(500);
 }
 
@@ -104,40 +96,29 @@ void loop()
           mode = (mode % MODES) + 1;
         previousMillisRed = currentMillis;
         previousMillisYellow = currentMillis;
+        ledBlinkStateRed = 0;
+        ledBlinkStateYellow = 0;
       }
     }
   }
   
   switch (mode)
   {
-    case 1:
-      ledStateGreen = LOW;
-      digitalWrite(PIN_LED_GREEN, ledStateGreen);
-      blink(PIN_LED_RED, 1000, 100, 900, &ledBlinkStateRed, &previousMillisRed);
+    case 1: //TODO: structure for blink
+      digitalWrite(PIN_LED_GREEN, LOW);
+      blink(PIN_LED_RED, 0, 500, 500, &ledBlinkStateRed, &previousMillisRed);
+      blink(PIN_LED_YELLOW, 0, 500, 500, &ledBlinkStateYellow, &previousMillisYellow);
+      break;
+    case 2:
+      digitalWrite(PIN_LED_GREEN, LOW);
+      blink(PIN_LED_RED, 0, 100, 1900, &ledBlinkStateRed, &previousMillisRed);
+      blink(PIN_LED_YELLOW, 1000, 100, 900, &ledBlinkStateYellow, &previousMillisYellow);
+      break;
+    case 3:
+      digitalWrite(PIN_LED_GREEN, LOW);
+      blink(PIN_LED_RED, 0, 100, 400, &ledBlinkStateRed, &previousMillisRed);
       blink(PIN_LED_YELLOW, 0, 100, 1900, &ledBlinkStateYellow, &previousMillisYellow);
       break;
-      // if (currentMillis - previousMillis >= 500) 
-      // {
-      //   // save the last time you blinked the LED
-      //   previousMillis = currentMillis;
-      //   digitalWrite(PIN_LED_RED, reverseLEDState(&ledStateRed));
-      //   digitalWrite(PIN_LED_YELLOW, reverseLEDState(&ledStateYellow));
-      // }
-      break;
-    //case 2:
-    //  digitalWrite(PIN_LED_GREEN, revLEDState(&ledStateGreen));
-    //  digitalWrite(PIN_LED_RED, HIGH);
-    //  digitalWrite(PIN_LED_YELLOW, LOW);
-    //  delay(1000); // Wait for 1000 millisecond(s)
-    //  digitalWrite(PIN_LED_RED, LOW);
-    //  digitalWrite(PIN_LED_YELLOW, HIGH);
-    //  delay(1000); // Wait for 1000 millisecond(s)
-    //  break;
-    //case 3:
-    //  digitalWrite(PIN_LED_GREEN, LOW);
-    //  digitalWrite(PIN_LED_RED, HIGH);
-    //  digitalWrite(PIN_LED_YELLOW, HIGH); 
-    //  break;
     default:
       digitalWrite(PIN_LED_GREEN, HIGH);
       digitalWrite(PIN_LED_RED, LOW);

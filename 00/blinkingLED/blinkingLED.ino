@@ -1,17 +1,35 @@
 // C++ code
 //
 
+typedef struct led_s{
+  const int PIN;
+  unsigned long previousMillis;
+  int ledBlinkState;
+
+} led_t;
+
+enum blinkStage{
+  BLINK_INIT,
+  BLINK_DELAY,
+  BLINK_DURATION,
+  BLINK_PAUSE
+};
+
+enum assignmentMode{
+  MANDATORY = 1,
+  BONUS1 = 2,
+  BONUS2 = 3
+};
+
 //constants
-const int PIN_LED_GREEN = 13;
-const int PIN_LED_RED = 12;
-const int PIN_LED_YELLOW = 11;
-const int PIN_BUTTON = 3;
-const int MODES = 3;
-const unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
+const int LED_PIN_GREEN = 13;
+const int LED_PIN_RED = 12;
+const int LED_PIN_YELLOW = 11;
+const int BUTTON_PIN = 3;
+const int MODE_AMOUNT = 3;
+const unsigned long DEBOUNCE_DELAY = 50;    // the debounce time; increase if the output flickers
 
 //variables
-int ledStateRed = LOW;
-int ledStateYellow = LOW;
 int mode = 0;
 unsigned long currentMillis = 0;
 unsigned long previousMillisRed = 0;
@@ -21,22 +39,22 @@ int ledBlinkStateYellow = 0;
 int buttonState;
 int lastButtonState = LOW;
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+led_t green = {LED_PIN_GREEN, 0, 0};
+led_t red = {LED_PIN_RED, 0, 0};
+led_t yellow = {LED_PIN_YELLOW, 0, 0};
 
 
 void blink (const int pin, unsigned long delay, unsigned long duration, unsigned long pause, int *ledState, unsigned long * previousMillis)
 {
-  // delay = delay*1000;
-  // duration = duration *1000;
-  // pause = pause *1000;
   currentMillis = millis();
   switch (*ledState)
   {
-    case 0: // TODO: Use macros (enums)
+    case BLINK_INIT:
     	*previousMillis = currentMillis;
     	digitalWrite(pin, LOW);
     	*ledState = 1; 
     	break;
-    case 1:
+    case BLINK_DELAY:
     	if (currentMillis - *previousMillis > delay) 
         {
           digitalWrite(pin, HIGH);
@@ -44,7 +62,7 @@ void blink (const int pin, unsigned long delay, unsigned long duration, unsigned
           *previousMillis = currentMillis;
         }
     	break;
-    case 2:
+    case BLINK_DURATION:
     	if (currentMillis - *previousMillis > duration) 
         {
           digitalWrite(pin, LOW);
@@ -52,7 +70,7 @@ void blink (const int pin, unsigned long delay, unsigned long duration, unsigned
           *previousMillis = currentMillis;
         }
     	break;
-    default:
+    default: // Pause
     	if (currentMillis - *previousMillis > pause) 
       {
         digitalWrite(pin, LOW);
@@ -64,25 +82,25 @@ void blink (const int pin, unsigned long delay, unsigned long duration, unsigned
 
 void setup()
 {
-  pinMode(PIN_LED_GREEN, OUTPUT);
-  pinMode(PIN_LED_RED, OUTPUT);
-  pinMode(PIN_LED_YELLOW, OUTPUT);
-  pinMode(PIN_BUTTON, INPUT_PULLUP);
+  pinMode(LED_PIN_GREEN, OUTPUT);
+  pinMode(LED_PIN_RED, OUTPUT);
+  pinMode(LED_PIN_YELLOW, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
   mode = 0;
-  digitalWrite(PIN_LED_GREEN, HIGH);
+  digitalWrite(LED_PIN_GREEN, HIGH);
   delay(500);
 }
 
 void loop()
 {
   currentMillis = millis();
-  int reading = digitalRead(PIN_BUTTON);
+  int reading = digitalRead(BUTTON_PIN);
   // If the switch changed, due to noise or pressing:
   if (reading != lastButtonState) {
     // reset the debouncing timer
     lastDebounceTime = millis();
   }
-  if ((millis() - lastDebounceTime) > debounceDelay) 
+  if ((millis() - lastDebounceTime) > DEBOUNCE_DELAY) 
   {
     if (reading != buttonState) 
     {
@@ -90,10 +108,10 @@ void loop()
 
       if (buttonState == LOW)
       {
-        if (mode == MODES)
+        if (mode == MODE_AMOUNT)
           mode = 0;
         else
-          mode = (mode % MODES) + 1;
+          mode = (mode % MODE_AMOUNT) + 1;
         previousMillisRed = currentMillis;
         previousMillisYellow = currentMillis;
         ledBlinkStateRed = 0;
@@ -104,25 +122,25 @@ void loop()
   
   switch (mode)
   {
-    case 1: //TODO: structure for blink
-      digitalWrite(PIN_LED_GREEN, LOW);
-      blink(PIN_LED_RED, 0, 500, 500, &ledBlinkStateRed, &previousMillisRed);
-      blink(PIN_LED_YELLOW, 0, 500, 500, &ledBlinkStateYellow, &previousMillisYellow);
+    case MANDATORY: //TODO: structure for blink
+      digitalWrite(LED_PIN_GREEN, LOW);
+      blink(LED_PIN_RED, 0, 500, 500, &ledBlinkStateRed, &previousMillisRed);
+      blink(LED_PIN_YELLOW, 0, 500, 500, &ledBlinkStateYellow, &previousMillisYellow);
       break;
-    case 2:
-      digitalWrite(PIN_LED_GREEN, LOW);
-      blink(PIN_LED_RED, 0, 100, 1900, &ledBlinkStateRed, &previousMillisRed);
-      blink(PIN_LED_YELLOW, 1000, 100, 900, &ledBlinkStateYellow, &previousMillisYellow);
+    case BONUS1:
+      digitalWrite(LED_PIN_GREEN, LOW);
+      blink(LED_PIN_RED, 0, 100, 1900, &ledBlinkStateRed, &previousMillisRed);
+      blink(LED_PIN_YELLOW, 1000, 100, 900, &ledBlinkStateYellow, &previousMillisYellow);
       break;
-    case 3:
-      digitalWrite(PIN_LED_GREEN, LOW);
-      blink(PIN_LED_RED, 0, 100, 400, &ledBlinkStateRed, &previousMillisRed);
-      blink(PIN_LED_YELLOW, 0, 100, 1900, &ledBlinkStateYellow, &previousMillisYellow);
+    case BONUS2:
+      digitalWrite(LED_PIN_GREEN, LOW);
+      blink(LED_PIN_RED, 0, 100, 400, &ledBlinkStateRed, &previousMillisRed);
+      blink(LED_PIN_YELLOW, 0, 100, 1900, &ledBlinkStateYellow, &previousMillisYellow);
       break;
     default:
-      digitalWrite(PIN_LED_GREEN, HIGH);
-      digitalWrite(PIN_LED_RED, LOW);
-      digitalWrite(PIN_LED_YELLOW, LOW); 
+      digitalWrite(LED_PIN_GREEN, HIGH);
+      digitalWrite(LED_PIN_RED, LOW);
+      digitalWrite(LED_PIN_YELLOW, LOW); 
   }
   // save the reading. Next time through the loop, it'll be the lastButtonState:
   lastButtonState = reading;

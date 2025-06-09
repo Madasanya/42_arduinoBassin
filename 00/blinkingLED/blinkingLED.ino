@@ -42,6 +42,7 @@ unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 led_t green = {LED_PIN_GREEN, 0, 0};
 led_t red = {LED_PIN_RED, 0, 0};
 led_t yellow = {LED_PIN_YELLOW, 0, 0};
+unsigned long phase3Start = 0;
 
 
 void blink (const int pin, unsigned long delay, unsigned long duration, unsigned long pause, int *ledState, unsigned long * previousMillis)
@@ -77,6 +78,23 @@ void blink (const int pin, unsigned long delay, unsigned long duration, unsigned
         *ledState = 1;
         *previousMillis = currentMillis;
       }
+  }
+}
+
+void blink2 (const int pin, unsigned long blinkStart, unsigned long blinkDuration, unsigned long cycleDuration, unsigned long modeStart)
+{
+  unsigned long phase = (currentMillis - modeStart) % cycleDuration;
+  if (phase < blinkStart)
+  {
+    digitalWrite(pin, LOW);
+  }
+  else if (phase >= blinkStart && phase < blinkStart + blinkDuration)
+  {
+    digitalWrite(pin, HIGH);
+  }
+  else if (phase >= blinkStart + blinkDuration)
+  {
+    digitalWrite(pin, LOW);
   }
 }
 
@@ -116,6 +134,7 @@ void loop()
         previousMillisYellow = currentMillis;
         ledBlinkStateRed = 0;
         ledBlinkStateYellow = 0;
+        phase3Start = currentMillis;
       }
     }
   }
@@ -134,8 +153,10 @@ void loop()
       break;
     case BONUS2:
       digitalWrite(LED_PIN_GREEN, LOW);
-      blink(LED_PIN_RED, 0, 100, 400, &ledBlinkStateRed, &previousMillisRed);
-      blink(LED_PIN_YELLOW, 0, 100, 1900, &ledBlinkStateYellow, &previousMillisYellow);
+      //blink(LED_PIN_RED, 0, 100, 400, &ledBlinkStateRed, &previousMillisRed);
+      //blink(LED_PIN_YELLOW, 0, 100, 1900, &ledBlinkStateYellow, &previousMillisYellow);
+      blink2(LED_PIN_RED, 0, 100, 500, phase3Start);
+      blink2(LED_PIN_YELLOW, 0, 100, 2000, phase3Start);
       break;
     default:
       digitalWrite(LED_PIN_GREEN, HIGH);

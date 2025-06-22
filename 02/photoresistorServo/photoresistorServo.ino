@@ -12,15 +12,14 @@ Servo servo2;
 const int threshold = 50;
 const int numSamples = 10;
 
-int servo1Angle = 90;
-int servo2Angle = 90;
+int servo1Angle = 0;
+int servo2Angle = 0;
 
 int ldrLeftSamples[numSamples];
 int ldrMidSamples[numSamples];
 int ldrRightSamples[numSamples];
 
 void setup() {
-  // put your setup code here, to run once:
   servo1.attach(servo1Pin);
   servo2.attach(servo2Pin);
   servo1.write(servo1Angle);
@@ -38,7 +37,6 @@ int getAverage(int pin) {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
   int leftVal  = getAverage(ldrLeftPin);
   int midVal   = getAverage(ldrMidPin);
   int rightVal = getAverage(ldrRightPin);
@@ -55,16 +53,18 @@ void loop() {
   Serial.print("   Diff2: ");
   Serial.println(diff2);
   if (abs(diff1) > threshold) {
-    // Berechne neuen Winkel, begrenzt auf 0-180
-    servo1Angle = map(diff1, -600, 600, 0, 180);
+    // Calculate angle between 0 - 180 considering LDR values between 0 and 650 
+    servo1Angle = map(diff1, 0, 650, 0, 180);
     servo1Angle = constrain(servo1Angle, 0, 180);
     servo1.write(servo1Angle);
   }
-  if (abs(diff2) > threshold) {
-    // Berechne neuen Winkel, begrenzt auf 0-180
-    servo2Angle = map(diff2, -600, 600, 0, 180);
+  if (abs(midVal) > threshold) {
+    // Calculate angle between 0 - 180 considering LDR values between 0 and 650 
+    servo2Angle = map(midVal, 0, 650, 0, 180);
     servo2Angle = constrain(servo2Angle, 0, 180);
     servo2.write(servo2Angle);
   }
+  // servo1.write(90);
+  // servo2.write(0);
   delay(500);
 }

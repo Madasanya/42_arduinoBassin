@@ -12,7 +12,7 @@ Servo servo2;
 const int threshold = 50;
 const int numSamples = 10;
 
-int servo1Angle = 0;
+int servo1Angle = 90;
 int servo2Angle = 0;
 
 int ldrLeftSamples[numSamples];
@@ -49,13 +49,11 @@ void loop() {
   Serial.print("   Middle: ");
   Serial.print(midVal);
   Serial.print("   Diff1: ");
-  Serial.print(diff1);
-  Serial.print("   Diff2: ");
-  Serial.println(diff2);
+  Serial.println(diff1);
   if (abs(diff1) > threshold) {
-    // Calculate angle between 0 - 180 considering LDR values between 0 and 650 
+    // Calculate angle between 30 - 150 considering LDR values between 0 and 650 
     servo1Angle = map(diff1, 0, 650, 0, 180);
-    servo1Angle = constrain(servo1Angle, 0, 180);
+    servo1Angle = constrain(servo1Angle, 30, 150);
     servo1.write(servo1Angle);
   }
   if (abs(midVal) > threshold) {

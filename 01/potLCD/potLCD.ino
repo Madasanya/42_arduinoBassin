@@ -139,23 +139,33 @@ void loop() {
   // map the result to 200 - 1000:
   // int delayTime = map(sensorReading, 0, 1023, 200, 1000);
   // set the cursor to the bottom row, 5th position:
-  lcd.setCursor(4, 1);
+  
   // draw the little man, arms down:
   //lcd.write(3);
   //delay(500);
   //delay(delayTime);
-  lcd.setCursor(4, 1);
+  //lcd.setCursor(4, 1);
   // draw him arms up:
   //lcd.write(4);
   //delay(delayTime);
   int data = analogRead(POTENTIOMETER_PIN);
-  analogWrite (LED, map(data,0,1023,0,255));
+  int ledValue = map(data,0,1023,0,255);
+  analogWrite (LED, ledValue);
   int percentage = map(data, 0, 1023, 0, 100);
-  Serial.print("Potentiometer at ");
-  Serial.print(percentage);
-  Serial.println("%");
-  lcd.print((LED, map(data,0,1023,0,255)));
+  //Serial.print("Potentiometer at ");
+  //Serial.print(percentage);
+  //Serial.println("%");
+  lcd.setCursor(2, 1);
+  if (ledValue < 100 && ledValue > 9)
+    lcd.print("0");
+  else if (ledValue < 10)
+    lcd.print("00");
+  lcd.print(ledValue);
   lcd.print(" (");
+  if (percentage < 100 && percentage > 9)
+    lcd.print("0");
+  else if (percentage < 10)
+    lcd.print("00");
   lcd.print(percentage);
   lcd.print("%)");
   delay(100);
